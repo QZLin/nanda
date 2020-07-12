@@ -3,6 +3,7 @@ from pygame import Surface
 from pygame import init, image, display, quit, event, time
 from pygame.event import EventType
 from pygame.rect import RectType
+from pygame.transform import scale
 
 
 class App:
@@ -23,6 +24,7 @@ class App:
         self.bg = image.load('img/bg1.png')
 
         self.ball = image.load('img/zero.png')
+        self.ball = scale(self.ball, (72, 108))
         self.ball_rect: RectType = self.ball.get_rect()
         self.ball_rect.x, self.ball_rect.y = 1, 1
 
@@ -43,12 +45,12 @@ class App:
         print(x, y)
         if x < 0 and self.velocity[0] < 0:
             self.velocity[0] = 0
-        elif x > self.width and self.velocity[0] > 0:
+        elif x > self.width - 72 and self.velocity[0] > 0:
             self.velocity[0] = 0
 
         if y < 0 and self.velocity[1] < 0:
             self.velocity[1] = 0
-        elif y > self.height and self.velocity[1] > 0:
+        elif y > self.height - 108 and self.velocity[1] > 0:
             self.velocity[1] = 0
 
         self.ball_rect = self.ball_rect.move(self.velocity)
