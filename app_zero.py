@@ -59,6 +59,7 @@ class Game:
         self.keep_going = True
         ###
         self.bg = image.load('img/bg1.png')
+        self.crystal = scale(image.load('img/crystal.png'), (50, 50))
 
         self.chr = image.load('img/zero.png')
         self.chr = scale(self.chr, (72, 108))
@@ -112,7 +113,8 @@ class Game:
         self.screen.blit(self.bg, (0, 0))
 
         for pt in self.dots:
-            circle(self.screen, (255, 0, 0), pt, 10)
+            self.screen.blit(self.crystal, pt)
+            # circle(self.screen, (255, 0, 0), pt, 10)
 
         self.screen.blit(self.chr, self.chr_xy)
         display.flip()
