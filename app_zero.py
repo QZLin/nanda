@@ -93,7 +93,7 @@ class Char(QSprite):
     def __load_img(self):
         for i in range(68 + 1):
             img = scale(
-                image.load('img/zero_move/' + '0' * (5 - len(str(i))) + str(i) + '.png'), (80, 130)
+                image.load('assets/img/zero_move/' + '0' * (5 - len(str(i))) + str(i) + '.png'), (80, 130)
             )
             self.img_move.append(img)
             self.img_move_l.append(flip(img, True, False))
@@ -144,14 +144,14 @@ class Game:
 
         self.keep_going = True
 
-        self.bg: Surface = image.load('img/bg1.png')
-        self.crystal = scale(image.load('img/crystal.png'), (50, 50))
+        self.bg: Surface = image.load('assets/img/bg1.png')
+        self.crystal = scale(image.load('assets/img/crystal.png'), (50, 50))
         self.font = SysFont(get_default_font(), 24)
 
         # self.chr = scale(image.load('img/zero.png'), (72, 108))
-        self.chr = image.load('img/zero_scale2.png')
+        self.chr = image.load('assets/img/zero_scale2.png')
         # self.chr_l = scale(image.load('img/zero_l.png'), (72, 108))
-        self.chr_l = image.load('img/zero_scale2_l.png')
+        self.chr_l = image.load('assets/img/zero_scale2_l.png')
         self.char = Char(self.chr, self.size)
         self.sprites = Group()
         self.sprites.add(self.char)
