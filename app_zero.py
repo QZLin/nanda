@@ -5,7 +5,7 @@ from pygame import KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT, QUIT
 from pygame import init, image, display, quit, event, time
 from pygame.font import get_default_font, SysFont
 from pygame.sprite import Sprite, Group
-from pygame.transform import scale
+from pygame.transform import scale, flip
 # Type Mark
 from pygame.rect import Rect
 from pygame import Surface
@@ -45,7 +45,7 @@ class Gird:
         return self.pts
 
 
-class Char(Sprite):
+class QSprite(Sprite):
     ZERO = 0
     MID = 1
 
@@ -75,6 +75,33 @@ class Char(Sprite):
             dx, dy = self.pixel_xy
             return self.rect.x + dx / 2, self.rect.y + dy / 2
 
+
+class Char(QSprite):
+    ZERO = 0
+    MID = 1
+
+    def __init__(self, img, border_size, *groups, vx=0, vy=0):
+        super().__init__(img, border_size, *groups, vx=vx, vy=vy)
+        self.img_move = []
+        self.img_move_l = []
+        self.__load_img()
+
+        self.mov_ir = 0
+        self.mov_il = 0
+        self.__load_img()
+
+    def __load_img(self):
+        for i in range(68 + 1):
+            img = scale(
+                image.load('img/zero_move/' + '0' * (5 - len(str(i))) + str(i) + '.png'), (80, 130)
+            )
+            self.img_move.append(img)
+            self.img_move_l.append(flip(img, True, False))
+        # for i in range(68 + 1):
+        #     self.img_move_l.append(flip(scale(
+        #         image.load('img/zero_move/' + '0' * (5 - len(str(i))) + str(i) + '.png'), (80, 130)
+        #     ), True, False))
+
     def update(self):
         x, y = self.rect.x, self.rect.y
         vx, vy = self.vx, self.vy
@@ -86,8 +113,19 @@ class Char(Sprite):
 
         if y < 0 and vy < 0:
             self.vy = 0
-        elif y > self.screen_y - 108 and vy > 0:
+        elif y > self.screen_y - 108 - 25 and vy > 0:
             self.vy = 0
+
+        if vx > 0 or (vx == 0 and vy < 0):
+            self.image = self.img_move[self.mov_ir]
+            self.mov_ir += 1
+            if self.mov_ir + 1 > len(self.img_move):
+                self.mov_ir = 0
+        elif vx < 0 or (vx == 0 and vy > 0):
+            self.image = self.img_move_l[self.mov_il]
+            self.mov_il += 1
+            if self.mov_il + 1 > len(self.img_move_l):
+                self.mov_il = 0
 
         self.rect = self.rect.move(self.vx, self.vy)
 
@@ -110,8 +148,11 @@ class Game:
         self.crystal = scale(image.load('img/crystal.png'), (50, 50))
         self.font = SysFont(get_default_font(), 24)
 
-        self.chr = scale(image.load('img/zero.png'), (72, 108))
-        self.char = Char(scale(self.chr, (72, 108)), self.size)
+        # self.chr = scale(image.load('img/zero.png'), (72, 108))
+        self.chr = image.load('img/zero_scale2.png')
+        # self.chr_l = scale(image.load('img/zero_l.png'), (72, 108))
+        self.chr_l = image.load('img/zero_scale2_l.png')
+        self.char = Char(self.chr, self.size)
         self.sprites = Group()
         self.sprites.add(self.char)
 
@@ -127,6 +168,10 @@ class Game:
                 if e.key in self.keys_arrow.keys():
                     self.velocity = [x * 3 for x in self.keys_arrow[e.key]]
                     self.char.vx, self.char.vy = [x * 3 for x in self.keys_arrow[e.key]]
+                    if self.char.vx > 0:
+                        self.char.image = self.chr
+                    elif self.char.vx < 0:
+                        self.char.image = self.chr_l
 
             elif e.type == QUIT:
                 self.exit()
