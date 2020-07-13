@@ -3,6 +3,7 @@ from random import choice
 
 from pygame import KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT, QUIT
 from pygame import init, image, display, quit, event, time
+from pygame.font import get_default_font, SysFont
 from pygame.sprite import Sprite, Group
 from pygame.transform import scale
 # Type Mark
@@ -54,14 +55,14 @@ class Char(Sprite):
 
         self.rect: Rect = self.image.get_rect()
         self.pixel_xy = self.image.get_width(), self.image.get_height()
-        # self.pos = [self.rect.x, self.rect.y]
+
         self.vx, self.vy = vx, vy
 
         super().__init__(*groups)
 
     def set_pos(self, x, y, pos_type=ZERO):
         if pos_type == self.ZERO:
-            # self.pos = [x, y]
+
             self.rect.x, self.rect.y = x, y
         elif pos_type == self.MID:
             self.rect.x = x - self.pixel_xy[0]
@@ -77,7 +78,7 @@ class Char(Sprite):
     def update(self):
         x, y = self.rect.x, self.rect.y
         vx, vy = self.vx, self.vy
-        # print(x, y)
+
         if x < 0 and vx < 0:
             self.vx = 0
         elif x > self.screen_x - 72 and vx > 0:
@@ -104,25 +105,21 @@ class Game:
         self.clock = time.Clock()
 
         self.keep_going = True
-        ###
+
         self.bg: Surface = image.load('img/bg1.png')
         self.crystal = scale(image.load('img/crystal.png'), (50, 50))
+        self.font = SysFont(get_default_font(), 24)
 
         self.chr = scale(image.load('img/zero.png'), (72, 108))
         self.char = Char(scale(self.chr, (72, 108)), self.size)
         self.sprites = Group()
         self.sprites.add(self.char)
 
-        # self.chr = image.load('img/zero.png')
-        # self.chr_xy: Rect = self.chr.get_rect()
-        # self.chr_xy.x, self.chr_xy.y = 1, 1
-
-        # self.velocity = [3, 3]
         self.gird = Gird(800 + 50, 600 + 50, 50, 50)
         self.gird.generate_row(7, 5)
         self.dots = []
         self.__new_point()
-        # self.dots = self.gird.points()
+        self.pts = 0
 
     def __event(self, events):
         for e in events:
@@ -136,14 +133,14 @@ class Game:
 
     def update(self):
         self.sprites.update()
-        # self.__move()
+
         self.__collect()
 
     def __move(self):
-        # self.ball_rect: RectType
+
         x, y = self.chr_xy.x, self.chr_xy.y
         vx, vy = self.velocity
-        # print(x, y)
+
         if x < 0 and vx < 0:
             self.velocity[0] = 0
         elif x > self.width - 72 and vx > 0:
@@ -161,7 +158,7 @@ class Game:
 
     def __collect(self):
         r = 50
-        # px, py = self.chr_xy.x, self.chr_xy.y
+
         px, py = self.char.get_pos(Char.MID)
         for pt in self.dots:
             x, y = pt
@@ -169,16 +166,19 @@ class Game:
                     distance(pt, (px, py)) < r:
                 self.dots.remove(pt)
                 self.__new_point()
+                self.pts += 1
 
     def __draw(self):
         self.screen.blit(self.bg, (0, 0))
 
         for pt in self.dots:
             self.screen.blit(self.crystal, pt)
-            # circle(self.screen, (255, 0, 0), pt, 10)
-
         self.sprites.draw(self.screen)
-        # self.screen.blit(self.chr, self.chr_xy)
+
+        text: Surface = self.font.render('Points: ' + str(self.pts), True, (255, 185, 15))
+        text_rect: Rect = text.get_rect()
+        text_rect.x = self.width / 2 - text_rect.width / 2
+        self.screen.blit(text, text_rect)
         display.flip()
 
     def mainloop(self):
