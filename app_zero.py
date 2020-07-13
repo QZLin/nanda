@@ -1,4 +1,5 @@
 from math import sqrt
+from random import choice
 
 from pygame import KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT, QUIT
 from pygame import Surface
@@ -69,7 +70,9 @@ class Game:
         self.velocity = [3, 3]
         self.gird = Gird(800 + 50, 600 + 50, 50, 50)
         self.gird.generate_row(7, 5)
-        self.dots = self.gird.points()
+        self.dots = []
+        self.__new_point()
+        # self.dots = self.gird.points()
 
     def __event(self, events):
         for e in events:
@@ -87,29 +90,34 @@ class Game:
     def __move(self):
         # self.ball_rect: RectType
         x, y = self.chr_xy.x, self.chr_xy.y
+        vx, vy = self.velocity
         # print(x, y)
-        if x < 0 and self.velocity[0] < 0:
+        if x < 0 and vx < 0:
             self.velocity[0] = 0
-        elif x > self.width - 72 and self.velocity[0] > 0:
+        elif x > self.width - 72 and vx > 0:
             self.velocity[0] = 0
 
-        if y < 0 and self.velocity[1] < 0:
+        if y < 0 and vy < 0:
             self.velocity[1] = 0
-        elif y > self.height - 108 and self.velocity[1] > 0:
+        elif y > self.height - 108 and vy > 0:
             self.velocity[1] = 0
 
         self.chr_xy = self.chr_xy.move(self.velocity)
 
+    def __new_point(self):
+        self.dots.append(choice(self.gird.points()))
+
     def __collect(self):
+        r = 50
+        px, py = self.chr_xy.x, self.chr_xy.y
         for pt in self.dots:
-            px, py = self.chr_xy.x, self.chr_xy.y
             x, y = pt
-            if abs(px - x) < 100 and abs(py - y) < 100:
-                if distance(pt, (self.chr_xy.x + 40, self.chr_xy.y + 64)) < 50:
-                    self.dots.remove(pt)
+            if abs(px - x) < r and abs(py - y) < r and \
+                    distance(pt, (self.chr_xy.x + 40, self.chr_xy.y + 64)) < r:
+                self.dots.remove(pt)
+                self.__new_point()
 
     def __draw(self):
-        # self.screen.fill((0, 0, 0))
         self.screen.blit(self.bg, (0, 0))
 
         for pt in self.dots:
