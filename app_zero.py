@@ -3,7 +3,7 @@ from random import choice
 
 from pygame import KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT, QUIT
 from pygame import init, image, display, quit, event, time
-from pygame.font import get_default_font, SysFont
+from pygame.font import get_default_font, SysFont, Font
 from pygame.sprite import Sprite, Group
 from pygame.transform import scale, flip
 # Type Mark
@@ -146,7 +146,8 @@ class Game:
 
         self.bg: Surface = image.load('assets/img/bg1.png')
         self.crystal = scale(image.load('assets/img/crystal.png'), (50, 50))
-        self.font = SysFont(get_default_font(), 24)
+        self.font = Font('assets/SourceHanSansSC-Normal.otf', 24)
+        # self.font = SysFont(get_default_font(), 24)
 
         # self.chr = scale(image.load('img/zero.png'), (72, 108))
         self.chr = image.load('assets/img/zero_scale2.png')
