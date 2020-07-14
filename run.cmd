@@ -1,0 +1,1 @@
+.\dist\app_zero\app_zero.exe

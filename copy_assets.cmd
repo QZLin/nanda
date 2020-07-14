@@ -1,0 +1,1 @@
+xcopy .\assets .\dist\app_zero\assets /I /e

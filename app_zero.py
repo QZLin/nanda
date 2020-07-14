@@ -11,6 +11,13 @@ from pygame.rect import Rect
 from pygame import Surface
 
 
+def multi_tuple(tp, value):
+    o = []
+    for x in tp:
+        o.append(x * value)
+    return o
+
+
 def distance(x_y1, x_y2):
     x1, y1 = x_y1
     x2, y2 = x_y2
@@ -19,6 +26,13 @@ def distance(x_y1, x_y2):
 
 class Gird:
     def __init__(self, xe, ye, xs=0, ys=0):
+        """
+        initialize gird data
+        :param xe: end x value
+        :param ye: end y value
+        :param xs: start x value
+        :param ys: start y value
+        """
         self.xs, self.xe = xs, xe
         self.ys, self.ye = ys, ye
         self.xx, self.yy = [], []
@@ -77,55 +91,47 @@ class QSprite(Sprite):
 
 
 class Char(QSprite):
-    ZERO = 0
-    MID = 1
 
     def __init__(self, img, border_size, *groups, vx=0, vy=0):
         super().__init__(img, border_size, *groups, vx=vx, vy=vy)
-        self.img_move = []
-        self.img_move_l = []
-        self.__load_img()
+        self.img_moves, self.img_moves_l = [], []
+        # self.__load_img()
 
-        self.mov_ir = 0
-        self.mov_il = 0
+        self.mov_index_left, self.mov_index_right = 0, 0
         self.__load_img()
 
     def __load_img(self):
-        for i in range(68 + 1):
+        for _ in range(68 + 1):
             img = scale(
-                image.load('assets/img/zero_move/' + '0' * (5 - len(str(i))) + str(i) + '.png'), (80, 130)
+                image.load('assets/img/zero_move/' + str(_).zfill(5) + '.png'), (80, 130)
             )
-            self.img_move.append(img)
-            self.img_move_l.append(flip(img, True, False))
-        # for i in range(68 + 1):
-        #     self.img_move_l.append(flip(scale(
-        #         image.load('img/zero_move/' + '0' * (5 - len(str(i))) + str(i) + '.png'), (80, 130)
-        #     ), True, False))
+            self.img_moves.append(img)
+            self.img_moves_l.append(flip(img, True, False))
 
     def update(self):
         x, y = self.rect.x, self.rect.y
-        vx, vy = self.vx, self.vy
+        # self.vx, self.vy = self.vx, self.vy
 
-        if x < 0 and vx < 0:
+        if x < 0 and self.vx < 0:
             self.vx = 0
-        elif x > self.screen_x - 72 and vx > 0:
+        elif x > self.screen_x - 72 and self.vx > 0:
             self.vx = 0
 
-        if y < 0 and vy < 0:
+        if y < 0 and self.vy < 0:
             self.vy = 0
-        elif y > self.screen_y - 108 - 25 and vy > 0:
+        elif y > self.screen_y - 108 - 25 and self.vy > 0:
             self.vy = 0
 
-        if vx > 0 or (vx == 0 and vy < 0):
-            self.image = self.img_move[self.mov_ir]
-            self.mov_ir += 1
-            if self.mov_ir + 1 > len(self.img_move):
-                self.mov_ir = 0
-        elif vx < 0 or (vx == 0 and vy > 0):
-            self.image = self.img_move_l[self.mov_il]
-            self.mov_il += 1
-            if self.mov_il + 1 > len(self.img_move_l):
-                self.mov_il = 0
+        if self.vx > 0 or (self.vx == 0 and self.vy < 0):
+            self.image = self.img_moves[self.mov_index_right]
+            self.mov_index_right += 1
+            if self.mov_index_right + 1 > len(self.img_moves):
+                self.mov_index_right = 0
+        elif self.vx < 0 or (self.vx == 0 and self.vy > 0):
+            self.image = self.img_moves_l[self.mov_index_left]
+            self.mov_index_left += 1
+            if self.mov_index_left + 1 > len(self.img_moves_l):
+                self.mov_index_left = 0
 
         self.rect = self.rect.move(self.vx, self.vy)
 
@@ -147,11 +153,8 @@ class Game:
         self.bg: Surface = image.load('assets/img/bg1.png')
         self.crystal = scale(image.load('assets/img/crystal.png'), (50, 50))
         self.font = Font('assets/SourceHanSansSC-Normal.otf', 24)
-        # self.font = SysFont(get_default_font(), 24)
 
-        # self.chr = scale(image.load('img/zero.png'), (72, 108))
         self.chr = image.load('assets/img/zero_scale2.png')
-        # self.chr_l = scale(image.load('img/zero_l.png'), (72, 108))
         self.chr_l = image.load('assets/img/zero_scale2_l.png')
         self.char = Char(self.chr, self.size)
         self.sprites = Group()
@@ -168,7 +171,8 @@ class Game:
             if e.type == KEYDOWN:
                 if e.key in self.keys_arrow.keys():
                     self.velocity = [x * 3 for x in self.keys_arrow[e.key]]
-                    self.char.vx, self.char.vy = [x * 3 for x in self.keys_arrow[e.key]]
+                    self.char.vx, self.char.vy = multi_tuple(self.keys_arrow[e.key], 3)
+                    # self.char.vx, self.char.vy = [x * 3 for x in self.keys_arrow[e.key]]
                     if self.char.vx > 0:
                         self.char.image = self.chr
                     elif self.char.vx < 0:
