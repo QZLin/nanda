@@ -1,4 +1,4 @@
-from math import sqrt
+from math import sqrt, hypot
 from random import choice
 
 from pygame import KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT, QUIT
@@ -21,7 +21,7 @@ def multi_tuple(tp, value):
 def distance(x_y1, x_y2):
     x1, y1 = x_y1
     x2, y2 = x_y2
-    return sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    return hypot(x2 - x1, y2 - y1)
 
 
 class Gird:
@@ -68,7 +68,7 @@ class QSprite(Sprite):
         self.screen_x, self.screen_y = border_size
 
         self.rect: Rect = self.image.get_rect()
-        self.pixel_xy = self.image.get_width(), self.image.get_height()
+        self.pixel_x, self.pixel_y = self.image.get_width(), self.image.get_height()
 
         self.vx, self.vy = vx, vy
 
@@ -79,15 +79,14 @@ class QSprite(Sprite):
 
             self.rect.x, self.rect.y = x, y
         elif pos_type == self.MID:
-            self.rect.x = x - self.pixel_xy[0]
-            self.rect.y = y - self.pixel_xy[1]
+            self.rect.x = x - self.pixel_x
+            self.rect.y = y - self.pixel_y
 
     def get_pos(self, pos_type=ZERO):
         if pos_type == self.ZERO:
             return self.rect.x, self.rect.y
         elif pos_type == self.MID:
-            dx, dy = self.pixel_xy
-            return self.rect.x + dx / 2, self.rect.y + dy / 2
+            return self.rect.x + self.pixel_x / 2, self.rect.y + self.pixel_y / 2
 
 
 class Char(QSprite):
@@ -95,7 +94,6 @@ class Char(QSprite):
     def __init__(self, img, border_size, *groups, vx=0, vy=0):
         super().__init__(img, border_size, *groups, vx=vx, vy=vy)
         self.img_moves, self.img_moves_l = [], []
-        # self.__load_img()
 
         self.mov_index_left, self.mov_index_right = 0, 0
         self.__load_img()
@@ -108,10 +106,7 @@ class Char(QSprite):
             self.img_moves.append(img)
             self.img_moves_l.append(flip(img, True, False))
 
-    def update(self):
-        x, y = self.rect.x, self.rect.y
-        # self.vx, self.vy = self.vx, self.vy
-
+    def __edge_detect(self, x, y):
         if x < 0 and self.vx < 0:
             self.vx = 0
         elif x > self.screen_x - 72 and self.vx > 0:
@@ -121,6 +116,11 @@ class Char(QSprite):
             self.vy = 0
         elif y > self.screen_y - 108 - 25 and self.vy > 0:
             self.vy = 0
+
+    def update(self):
+        x, y = self.rect.x, self.rect.y
+        # self.vx, self.vy = self.vx, self.vy
+        self.__edge_detect(x, y)
 
         if self.vx > 0 or (self.vx == 0 and self.vy < 0):
             self.image = self.img_moves[self.mov_index_right]
@@ -152,7 +152,7 @@ class Game:
 
         self.bg: Surface = image.load('assets/img/bg1.png')
         self.crystal = scale(image.load('assets/img/crystal.png'), (50, 50))
-        self.font = Font('assets/SourceHanSansSC-Normal.otf', 24)
+        self.font = Font('assets/font/SourceHanSansSC-Normal.otf', 24)
 
         self.chr = image.load('assets/img/zero_scale2.png')
         self.chr_l = image.load('assets/img/zero_scale2_l.png')
@@ -172,7 +172,6 @@ class Game:
                 if e.key in self.keys_arrow.keys():
                     self.velocity = [x * 3 for x in self.keys_arrow[e.key]]
                     self.char.vx, self.char.vy = multi_tuple(self.keys_arrow[e.key], 3)
-                    # self.char.vx, self.char.vy = [x * 3 for x in self.keys_arrow[e.key]]
                     if self.char.vx > 0:
                         self.char.image = self.chr
                     elif self.char.vx < 0:
