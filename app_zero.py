@@ -90,6 +90,12 @@ class QSprite(Sprite):
 
 
 class Char(QSprite):
+    STATIC = 0
+    MOVE_L = -1
+    MOVE_R = 1
+
+    # UP = 2
+    # DOWN = -2
 
     def __init__(self, img, border_size, *groups, vx=0, vy=0):
         super().__init__(img, border_size, *groups, vx=vx, vy=vy)
@@ -97,6 +103,7 @@ class Char(QSprite):
 
         self.mov_index_left, self.mov_index_right = 0, 0
         self.__load_img()
+        self.animate = self.STATIC
 
     def __load_img(self):
         for _ in range(68 + 1):
@@ -117,22 +124,40 @@ class Char(QSprite):
         elif y > self.screen_y - 108 - 25 and self.vy > 0:
             self.vy = 0
 
+    def avatar(self):
+        if self.animate == self.STATIC:
+            pass
+        elif self.animate == self.MOVE_L:
+            self.image = self.img_moves_l[self.mov_index_left]
+            self.mov_index_left += 1
+            if self.mov_index_left + 1 > len(self.img_moves_l):
+                self.mov_index_left = 0
+        elif self.animate == self.MOVE_R:
+            self.image = self.img_moves[self.mov_index_right]
+            self.mov_index_right += 1
+            if self.mov_index_right + 1 > len(self.img_moves):
+                self.mov_index_right = 0
+
     def update(self):
         x, y = self.rect.x, self.rect.y
         # self.vx, self.vy = self.vx, self.vy
         self.__edge_detect(x, y)
 
-        if self.vx > 0 or (self.vx == 0 and self.vy < 0):
-            self.image = self.img_moves[self.mov_index_right]
-            self.mov_index_right += 1
-            if self.mov_index_right + 1 > len(self.img_moves):
-                self.mov_index_right = 0
-        elif self.vx < 0 or (self.vx == 0 and self.vy > 0):
-            self.image = self.img_moves_l[self.mov_index_left]
-            self.mov_index_left += 1
-            if self.mov_index_left + 1 > len(self.img_moves_l):
-                self.mov_index_left = 0
-
+        # if self.vx > 0 or (self.vx == 0 and self.vy < 0):
+        if self.vx > 0:
+            self.animate = self.MOVE_R
+            # self.image = self.img_moves[self.mov_index_right]
+            # self.mov_index_right += 1
+            # if self.mov_index_right + 1 > len(self.img_moves):
+            #     self.mov_index_right = 0
+        # elif self.vx < 0 or (self.vx == 0 and self.vy > 0):
+        elif self.vx < 0:
+            self.animate = self.MOVE_L
+            # self.image = self.img_moves_l[self.mov_index_left]
+            # self.mov_index_left += 1
+            # if self.mov_index_left + 1 > len(self.img_moves_l):
+            #     self.mov_index_left = 0
+        self.avatar()
         self.rect = self.rect.move(self.vx, self.vy)
 
 
