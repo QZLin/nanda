@@ -1,3 +1,4 @@
+from warnings import warn
 from math import sqrt, hypot
 from random import choice
 
@@ -102,10 +103,10 @@ class Char(QSprite):
         self.img_moves, self.img_moves_l = [], []
 
         self.mov_index_left, self.mov_index_right = 0, 0
-        self.__load_img()
+        self.load_img()
         self.animate = self.STATIC
 
-    def __load_img(self):
+    def load_img(self):
         for _ in range(68 + 1):
             img = scale(
                 image.load('assets/img/zero_move/' + str(_).zfill(5) + '.png'), (80, 130)
@@ -113,7 +114,7 @@ class Char(QSprite):
             self.img_moves.append(img)
             self.img_moves_l.append(flip(img, True, False))
 
-    def __edge_detect(self, x, y):
+    def edge(self, x, y):
         if x < 0 and self.vx < 0:
             self.vx = 0
         elif x > self.screen_x - 72 and self.vx > 0:
@@ -141,7 +142,7 @@ class Char(QSprite):
     def update(self):
         x, y = self.rect.x, self.rect.y
         # self.vx, self.vy = self.vx, self.vy
-        self.__edge_detect(x, y)
+        self.edge(x, y)
 
         # if self.vx > 0 or (self.vx == 0 and self.vy < 0):
         if self.vx > 0:
@@ -175,7 +176,7 @@ class Game:
 
         self.keep_going = True
 
-        self.bg: Surface = image.load('assets/img/bg1.png')
+        self.bg: Surface = image.load('assets/img/bg2.png')
         self.crystal = scale(image.load('assets/img/crystal.png'), (50, 50))
         self.font = Font('assets/font/SourceHanSansSC-Normal.otf', 24)
 
@@ -191,26 +192,33 @@ class Game:
         self.__new_point()
         self.pts = 0
 
-    def __event(self, events):
+        self.text: Surface = self.font.render('Points: ' + str(self.pts), True, (254, 185, 15))
+        self.rect_text: Rect = self.text.get_rect()
+        self.rect_text.x = self.width / 2 - self.rect_text.width / 2
+
+    def on_key_press(self, key_event):
+        if key_event.key in self.keys_arrow.keys():
+            # self.velocity = multi_tuple(self.keys_arrow[e.key], 2)
+            self.char.vx, self.char.vy = multi_tuple(self.keys_arrow[key_event.key], 2)
+            # if self.char.vx > -1:
+            #     self.char.image = self.chr
+            # elif self.char.vx < -1:
+            #     self.char.image = self.chr_l
+
+    def event(self, events):
         for e in events:
             if e.type == KEYDOWN:
-                if e.key in self.keys_arrow.keys():
-                    self.velocity = [x * 3 for x in self.keys_arrow[e.key]]
-                    self.char.vx, self.char.vy = multi_tuple(self.keys_arrow[e.key], 3)
-                    if self.char.vx > 0:
-                        self.char.image = self.chr
-                    elif self.char.vx < 0:
-                        self.char.image = self.chr_l
+                self.on_key_press(e)
 
             elif e.type == QUIT:
                 self.exit()
 
     def update(self):
         self.sprites.update()
-
         self.__collect()
 
     def __move(self):
+        warn('use sprite update instead', DeprecationWarning)
 
         x, y = self.chr_xy.x, self.chr_xy.y
         vx, vy = self.velocity
@@ -241,26 +249,29 @@ class Game:
                 self.dots.remove(pt)
                 self.__new_point()
                 self.pts += 1
+                self.update_text()
 
-    def __draw(self):
+    def update_text(self):
+        self.text: Surface = self.font.render('Points: ' + str(self.pts), True, (254, 185, 15))
+        self.rect_text: Rect = self.text.get_rect()
+        self.rect_text.x = self.width / 2 - self.rect_text.width / 2
+
+    def draw(self):
         self.screen.blit(self.bg, (0, 0))
 
         for pt in self.dots:
             self.screen.blit(self.crystal, pt)
         self.sprites.draw(self.screen)
 
-        text: Surface = self.font.render('Points: ' + str(self.pts), True, (255, 185, 15))
-        text_rect: Rect = text.get_rect()
-        text_rect.x = self.width / 2 - text_rect.width / 2
-        self.screen.blit(text, text_rect)
+        self.screen.blit(self.text, self.rect_text)
         display.flip()
 
     def mainloop(self):
         while self.keep_going:
             self.update()
-            self.__draw()
+            self.draw()
             self.clock.tick(self.tick)
-            self.__event(event.get())
+            self.event(event.get())
 
     def exit(self):
         print('Bye!')

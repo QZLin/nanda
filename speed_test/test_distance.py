@@ -1,5 +1,5 @@
 from unittest import TestCase
-from app_zero import distance
+from nanda import distance
 
 
 class TestDistance(TestCase):
