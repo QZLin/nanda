@@ -238,6 +238,15 @@ class Game:
     def __new_point(self):
         self.dots.append(choice(self.gird.points()))
 
+    def on_collect(self, i):
+        # if (i + 1) % 5 == 0:
+        #     return
+        pt = choice(self.gird.points())
+        smile = QSprite(scale(image.load('assets/img/slime_2.png'), (70, 49)), self.size)
+        x, y = pt
+        smile.set_pos(x, y, QSprite.MID)
+        self.sprites.add(smile)
+
     def __collect(self):
         r = 50
 
@@ -249,10 +258,11 @@ class Game:
                 self.dots.remove(pt)
                 self.__new_point()
                 self.pts += 1
-                self.update_text()
+                self.set_point_text(self.pts)
+                self.on_collect(self.pts)
 
-    def update_text(self):
-        self.text: Surface = self.font.render('Points: ' + str(self.pts), True, (254, 185, 15))
+    def set_point_text(self, point: int):
+        self.text: Surface = self.font.render('Points: ' + str(point), True, (254, 185, 15))
         self.rect_text: Rect = self.text.get_rect()
         self.rect_text.x = self.width / 2 - self.rect_text.width / 2
 
