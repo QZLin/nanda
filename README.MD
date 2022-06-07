@@ -1,3 +1,3 @@
 # Nanda?
 
-A tiny demo game made by pygame
+A mini game made by pygame
